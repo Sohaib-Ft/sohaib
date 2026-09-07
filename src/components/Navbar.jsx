@@ -58,7 +58,7 @@ export default function Navbar({ theme, toggleTheme }) {
   return (
     <>
       {/* Top Navbar — always visible, just logo */}
-      <nav className="top-navbar" id="navbar">
+      <nav className={`top-navbar ${scrolled ? 'top-navbar--scrolled' : ''}`} id="navbar">
         <div className="top-navbar__container container">
           <a href="#hero" className="top-navbar__logo" onClick={(e) => handleNavClick(e, '#hero')}>
             <span className="top-navbar__logo-icon">SF</span>

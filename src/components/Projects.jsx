@@ -48,7 +48,22 @@ const GHIcon = () => (
   </svg>
 );
 
+const hasRepo = (project) => {
+  if (!project || project.isPrivate) return false;
+  const url = (project.github || '').trim();
+  if (!url || url === '#') return false;
+  try {
+    const u = new URL(url);
+    if (u.hostname !== 'github.com') return false;
+    const parts = u.pathname.split('/').filter(Boolean);
+    return parts.length >= 2;
+  } catch {
+    return false;
+  }
+};
+
 function ProjectCard({ project, index }) {
+  const showRepo = hasRepo(project);
   return (
     <div className={`projects__card animate-in delay-${(index % 3) + 1}`}>
       <div className="projects__card-image">
@@ -64,17 +79,19 @@ function ProjectCard({ project, index }) {
             <span>No preview available</span>
           </div>
         )}
-        <div className="projects__card-overlay">
-          <a
-            href={project.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="projects__card-link"
-          >
-            <GHIcon />
-            View on GitHub
-          </a>
-        </div>
+        {showRepo && (
+          <div className="projects__card-overlay">
+            <a
+              href={project.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="projects__card-link"
+            >
+              <GHIcon />
+              View on GitHub
+            </a>
+          </div>
+        )}
       </div>
 
       <div className="projects__card-content">
@@ -91,7 +108,7 @@ function ProjectCard({ project, index }) {
             <span className="projects__card-tag" key={i}>{tag}</span>
           ))}
         </div>
-        {!project.isPrivate && (
+        {showRepo && (
           <a
             href={project.github}
             target="_blank"
@@ -126,8 +143,9 @@ export default function Projects({ onViewAll }) {
       })
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          const sorted = [...data].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-          const mapped = sorted.map((p, i) => ({
+          // Backend already sorts by (order asc, featured desc, createdAt desc).
+          // Preserve that order — don't re-sort by date here or we'd lose the admin's manual order.
+          const mapped = data.map((p, i) => ({
             title: p.title || 'Untitled',
             fullTitle: p.title || 'Untitled',
             description: p.description || '',
@@ -136,6 +154,7 @@ export default function Projects({ onViewAll }) {
               : '',
             tags: Array.isArray(p.tags) ? p.tags : [],
             isPrivate: p.isPrivate || false,
+            featured: !!p.featured,
             github: p.github || '#',
             color: COLORS[i % COLORS.length],
           }));
@@ -149,9 +168,12 @@ export default function Projects({ onViewAll }) {
   }, []);
 
   // If API loaded, use DB projects. If API not loaded, use fallback.
+  // Backend already ordered by (order asc, featured desc, createdAt desc).
   let displayProjects;
   if (apiLoaded && allProjects.length > 0) {
-    displayProjects = allProjects.slice(0, 4);
+    const featured = allProjects.filter((p) => p.featured);
+    const source = featured.length > 0 ? featured : allProjects;
+    displayProjects = source.slice(0, 4);
   } else {
     displayProjects = FALLBACK;
   }

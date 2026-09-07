@@ -11,6 +11,8 @@ const projects = [
     image: '/images/cmms.png',
     tags: ['Laravel', 'React', 'MySQL', 'REST API'],
     github: 'https://github.com/Sohaib-Ft',
+    featured: true,
+    order: 0,
   },
   {
     title: 'LinkedU',
@@ -18,6 +20,8 @@ const projects = [
     image: '/images/linkedu.png',
     tags: ['Node.js', 'React', 'MongoDB', 'Express'],
     github: 'https://github.com/Sohaib-Ft',
+    featured: true,
+    order: 1,
   },
   {
     title: 'Book Review',
@@ -25,6 +29,8 @@ const projects = [
     image: '/images/book-review.png',
     tags: ['PHP', 'Laravel', 'PostgreSQL', 'Bootstrap'],
     github: 'https://github.com/Sohaib-Ft',
+    featured: true,
+    order: 2,
   },
   {
     title: 'OFPPT Cours',
@@ -32,6 +38,8 @@ const projects = [
     image: '/images/ofppt.png',
     tags: ['HTML', 'CSS', 'JavaScript', 'PHP'],
     github: 'https://github.com/Sohaib-Ft',
+    featured: false,
+    order: 3,
   },
 ];
 

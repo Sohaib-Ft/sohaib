@@ -785,6 +785,66 @@ img {
   gap: 8px;
 }
 
+/* Responsive messages table */
+.messages-table-wrap {
+  overflow-x: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.messages-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.messages-table th {
+  padding: 14px 16px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.messages-table td {
+  padding: 16px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.84rem;
+  vertical-align: middle;
+}
+
+.messages-table tbody tr:last-child td { border-bottom: 0; }
+.messages-table tbody tr { transition: background var(--transition); }
+.messages-table tbody tr:hover { background: var(--bg-glass-hover); }
+.messages-table tbody tr.message-row--unread { background: rgba(99, 102, 241, 0.07); }
+.messages-table tbody tr.message-row--unread:hover { background: rgba(99, 102, 241, 0.12); }
+.messages-table th:first-child, .messages-table td:first-child { padding-left: 20px; }
+.messages-table th:last-child, .messages-table td:last-child { padding-right: 20px; }
+.messages-table__actions-heading { text-align: right; }
+.message-table__name { display: inline-flex; align-items: center; gap: 8px; color: var(--text-primary); font-weight: 700; white-space: nowrap; }
+.message-table__link { color: var(--text-secondary); }
+.message-table__link:hover { color: var(--accent-primary); }
+.message-table__muted { color: var(--text-muted); font-size: 0.76rem; }
+.message-table__date { color: var(--text-muted) !important; white-space: nowrap; font-size: 0.76rem !important; }
+.message-table__message-cell { max-width: 300px; }
+.message-preview { max-width: 300px; }
+.message-preview summary { overflow: hidden; color: var(--text-secondary); cursor: pointer; text-overflow: ellipsis; white-space: nowrap; }
+.message-preview summary::marker { color: var(--accent-primary); }
+.message-preview p { max-width: 360px; margin: 10px 0 0; color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap; }
+.messages-table td:last-child { text-align: right; }
+
+@media (max-width: 700px) {
+  .messages-table-wrap { border-radius: var(--radius-md); }
+  .messages-table { min-width: 820px; }
+}
+
 /* ==========================================
    MODAL
    ========================================== */

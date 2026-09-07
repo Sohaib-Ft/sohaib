@@ -24,6 +24,14 @@ const projectSchema = new mongoose.Schema({
   isPrivate: {
     type: Boolean,
     default: false,
+  },
+  featured: {
+    type: Boolean,
+    default: false,
+  },
+  order: {
+    type: Number,
+    default: 0,
   }
 }, { timestamps: true });
 

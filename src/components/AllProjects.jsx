@@ -48,7 +48,22 @@ const GHIcon = () => (
   </svg>
 );
 
+const hasRepo = (project) => {
+  if (!project || project.isPrivate) return false;
+  const url = (project.github || '').trim();
+  if (!url || url === '#') return false;
+  try {
+    const u = new URL(url);
+    if (u.hostname !== 'github.com') return false;
+    const parts = u.pathname.split('/').filter(Boolean);
+    return parts.length >= 2;
+  } catch {
+    return false;
+  }
+};
+
 function ProjectCard({ project, index }) {
+  const showRepo = hasRepo(project);
   return (
     <div className={`allprojects__card animate-in delay-${(index % 3) + 1}`}>
       <div className="allprojects__card-image">
@@ -64,17 +79,19 @@ function ProjectCard({ project, index }) {
             <span>No preview available</span>
           </div>
         )}
-        <div className="allprojects__card-overlay">
-          <a
-            href={project.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="allprojects__card-link"
-          >
-            <GHIcon />
-            View on GitHub
-          </a>
-        </div>
+        {showRepo && (
+          <div className="allprojects__card-overlay">
+            <a
+              href={project.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="allprojects__card-link"
+            >
+              <GHIcon />
+              View on GitHub
+            </a>
+          </div>
+        )}
       </div>
 
       <div className="allprojects__card-content">
@@ -91,7 +108,7 @@ function ProjectCard({ project, index }) {
             <span className="allprojects__card-tag" key={i}>{tag}</span>
           ))}
         </div>
-        {!project.isPrivate && (
+        {showRepo && (
           <a
             href={project.github}
             target="_blank"
@@ -124,10 +141,8 @@ export default function AllProjects({ onBack }) {
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
-            const sorted = [...data].sort(
-              (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-            );
-            const mapped = sorted.map((p, i) => ({
+            // Backend already sorts by (order asc, featured desc, createdAt desc). Preserve it.
+            const mapped = data.map((p, i) => ({
               title: p.title || 'Untitled',
               fullTitle: p.title || 'Untitled',
               description: p.description || '',

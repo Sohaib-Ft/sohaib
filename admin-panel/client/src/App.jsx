@@ -183,6 +183,11 @@ export default function App() {
   };
 
   const unreadCount = messages.filter(m => !m.isRead).length;
+  const sortedMessages = [...messages].sort((a, b) => {
+    const dateA = new Date(a.createdAt || a.created_at || 0).getTime();
+    const dateB = new Date(b.createdAt || b.created_at || 0).getTime();
+    return dateB - dateA;
+  });
   const categories = ['Frontend', 'Backend', 'Database', 'API', 'Tools', 'Other'];
 
   // Skills tab: 'mine' or 'library'
@@ -431,28 +436,56 @@ export default function App() {
             </div>
           </div>
 
-          {messages.map(msg => (
-            <div className={`message-card ${!msg.isRead ? 'message-card--unread' : ''}`} key={msg._id}>
-              <div className="message-card__header">
-                <span className="message-card__sender">
-                  {msg.name}
-                  {!msg.isRead && <span className="badge badge--new">New</span>}
-                </span>
-                <div className="message-card__actions">
-                  <button className="card-btn card-btn--edit" onClick={() => toggleRead(msg)} title={msg.isRead ? 'Mark unread' : 'Mark read'}>
-                    {msg.isRead ? '📩' : '✅'}
-                  </button>
-                  <button className="card-btn card-btn--delete" onClick={() => deleteMessage(msg._id)} title="Delete">🗑</button>
-                </div>
-              </div>
-              <div className="message-card__meta">
-                <a href={`mailto:${msg.email}`}>{msg.email}</a>
-                {msg.phone && <span>{msg.phone}</span>}
-                <span>{new Date(msg.createdAt).toLocaleDateString()}</span>
-              </div>
-              <div className="message-card__body">{msg.message}</div>
+          {sortedMessages.length > 0 && (
+            <div className="messages-table-wrap">
+              <table className="messages-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Sent</th>
+                    <th>Message</th>
+                    <th className="messages-table__actions-heading">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedMessages.map(msg => {
+                    const sentAt = msg.createdAt || msg.created_at;
+                    return (
+                      <tr className={!msg.isRead ? 'message-row--unread' : ''} key={msg._id}>
+                        <td data-label="Name">
+                          <span className="message-table__name">
+                            {msg.name}
+                            {!msg.isRead && <span className="badge badge--new">New</span>}
+                          </span>
+                        </td>
+                        <td data-label="Email"><a href={`mailto:${msg.email}`} className="message-table__link">{msg.email}</a></td>
+                        <td data-label="Phone">{msg.phone || <span className="message-table__muted">Not provided</span>}</td>
+                        <td data-label="Sent" className="message-table__date">
+                          {sentAt ? new Date(sentAt).toLocaleString() : 'Unknown'}
+                        </td>
+                        <td data-label="Message" className="message-table__message-cell">
+                          <details className="message-preview">
+                            <summary>{msg.message || 'No message content'}</summary>
+                            <p>{msg.message}</p>
+                          </details>
+                        </td>
+                        <td data-label="Actions">
+                          <div className="message-card__actions">
+                            <button className="card-btn card-btn--edit" onClick={() => toggleRead(msg)} title={msg.isRead ? 'Mark unread' : 'Mark read'}>
+                              {msg.isRead ? '📩' : '✅'}
+                            </button>
+                            <button className="card-btn card-btn--delete" onClick={() => deleteMessage(msg._id)} title="Delete">🗑</button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))}
+          )}
 
           {messages.length === 0 && (
             <div className="empty-state">

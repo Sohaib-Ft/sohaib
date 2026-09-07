@@ -214,6 +214,13 @@
   overflow: hidden;
   backdrop-filter: blur(12px);
   transition: all var(--transition-base);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.allprojects__card * {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .allprojects__card:hover {
@@ -289,6 +296,11 @@
 
 .allprojects__card-content {
   padding: 28px;
+  background: var(--bg-secondary);
+}
+
+[data-theme="light"] .allprojects__card-content {
+  background: #ffffff;
 }
 
 .allprojects__card-header {

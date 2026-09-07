@@ -1,25 +1,55 @@
 import { useState } from 'react';
 import './Contact.css';
 
+const initialForm = { name: '', email: '', phone: '', message: '' };
+
 export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
+  const [formData, setFormData] = useState(initialForm);
+  const [status, setStatus] = useState('idle'); // 'idle' | 'sending' | 'success' | 'error'
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, you'd send this to a backend
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 4000);
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    if (status === 'sending') return;
+
+    setStatus('sending');
+    setErrorMessage('');
+
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal
+      ? 'http://127.0.0.1:5000'
+      : (import.meta.env.VITE_API_URL || 'https://portfolio-backend-sohaib.fly.dev');
+
+    try {
+      const res = await fetch(`${API_URL}/api/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          message: formData.message.trim(),
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.message || `Server responded with ${res.status}`);
+      }
+
+      setStatus('success');
+      setFormData(initialForm);
+      setTimeout(() => setStatus('idle'), 4000);
+    } catch (err) {
+      console.error('Contact form error:', err);
+      setStatus('error');
+      setErrorMessage(err.message || 'Something went wrong. Please try again or email me directly.');
+      setTimeout(() => setStatus('idle'), 5000);
+    }
   };
 
   return (
@@ -118,7 +148,7 @@ export default function Contact() {
             </div>
 
             <div className="contact__form-group">
-              <label className="contact__form-label" htmlFor="contact-phone">Phone <span className="contact__optional">(optional)</span></label>
+              <label className="contact__form-label" htmlFor="contact-phone">Phone </label>
               <input
                 type="tel"
                 id="contact-phone"
@@ -144,15 +174,33 @@ export default function Contact() {
               ></textarea>
             </div>
 
-            <button type="submit" className="contact__form-btn" id="contact-submit">
-              {submitted ? (
+            <button
+              type="submit"
+              className={`contact__form-btn ${status === 'error' ? 'contact__form-btn--error' : ''}`}
+              id="contact-submit"
+              disabled={status === 'sending'}
+            >
+              {status === 'sending' && (
+                <>
+                  <svg className="contact__spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  Sending...
+                </>
+              )}
+              {status === 'success' && (
                 <>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   Message Sent!
                 </>
-              ) : (
+              )}
+              {status === 'error' && (
                 <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {errorMessage}
+                </>
+              )}
+              {status === 'idle' && (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                   Send Message
                 </>
               )}
