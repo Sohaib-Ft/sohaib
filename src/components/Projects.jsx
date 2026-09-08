@@ -133,7 +133,12 @@ export default function Projects({ onViewAll }) {
   const [apiLoaded, setApiLoaded] = useState(false);
 
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const API_URL = isLocal ? 'http://127.0.0.1:5000' : (import.meta.env.VITE_API_URL || '');
+  const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+  const API_URL = isLocal ? 'http://127.0.0.1:5000' : (
+    configuredApiUrl && !/^https?:\/\//i.test(configuredApiUrl)
+      ? `https://${configuredApiUrl}`
+      : configuredApiUrl
+  );
 
   useEffect(() => {
     fetch(`${API_URL}/api/projects`)
@@ -142,7 +147,7 @@ export default function Projects({ onViewAll }) {
         return res.json();
       })
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           // Backend already sorts by (order asc, featured desc, createdAt desc).
           // Preserve that order — don't re-sort by date here or we'd lose the admin's manual order.
           const mapped = data.map((p, i) => ({

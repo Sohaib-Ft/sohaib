@@ -10,16 +10,29 @@ connectDB();
 
 const app = express();
 
+const normalizeOrigin = (origin) => {
+  const value = String(origin || '').trim();
+  if (!value) return '';
+  return /^https?:\/\//i.test(value) ? value.replace(/\/$/, '') : `https://${value}`;
+};
+
 const allowedOrigins = [
   'https://43866c6f.sohaib-mtk.pages.dev',
   'https://sohaib-mtk.pages.dev',
-  process.env.ADMIN_ORIGIN,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  ...(process.env.ADMIN_ORIGIN || '').split(','),
+].map(normalizeOrigin).filter(Boolean);
+
+const normalizedAllowedOrigins = [
+  ...allowedOrigins,
+  ...(process.env.FRONTEND_ORIGINS || '').split(',').map(normalizeOrigin),
 ].filter(Boolean);
 
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    if (normalizedAllowedOrigins.includes(normalizeOrigin(origin))) {
       return callback(null, true);
     }
     return callback(new Error('Not allowed by CORS'));

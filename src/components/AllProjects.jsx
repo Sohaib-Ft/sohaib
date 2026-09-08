@@ -132,7 +132,12 @@ export default function AllProjects({ onBack }) {
   const [projects, setProjects] = useState(FALLBACK);
 
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const API_URL = isLocal ? 'http://127.0.0.1:5000' : (import.meta.env.VITE_API_URL || '');
+  const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+  const API_URL = isLocal ? 'http://127.0.0.1:5000' : (
+    configuredApiUrl && !/^https?:\/\//i.test(configuredApiUrl)
+      ? `https://${configuredApiUrl}`
+      : configuredApiUrl
+  );
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -140,7 +145,7 @@ export default function AllProjects({ onBack }) {
         const res = await fetch(`${API_URL}/api/projects`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data)) {
             // Backend already sorts by (order asc, featured desc, createdAt desc). Preserve it.
             const mapped = data.map((p, i) => ({
               title: p.title || 'Untitled',

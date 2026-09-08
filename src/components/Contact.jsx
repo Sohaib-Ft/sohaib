@@ -20,9 +20,12 @@ export default function Contact() {
     setErrorMessage('');
 
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
     const API_URL = isLocal
       ? 'http://127.0.0.1:5000'
-      : (import.meta.env.VITE_API_URL || '');
+      : (configuredApiUrl && !/^https?:\/\//i.test(configuredApiUrl)
+        ? `https://${configuredApiUrl}`
+        : configuredApiUrl);
 
     try {
       const res = await fetch(`${API_URL}/api/messages`, {

@@ -13,7 +13,8 @@ export default function DashboardOverview() {
   useEffect(() => {
     const fetchStats = async () => {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://127.0.0.1:5000' : '');
+      const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+      const API_URL = isLocal ? 'http://127.0.0.1:5000' : (configuredApiUrl && !/^https?:\/\//i.test(configuredApiUrl) ? `https://${configuredApiUrl}` : configuredApiUrl);
       try {
         const [projectsRes, skillsRes, messagesRes] = await Promise.all([
           axios.get(`${API_URL}/api/projects`),
