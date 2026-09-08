@@ -11,38 +11,8 @@ connectDB();
 
 const app = express();
 
-const normalizeOrigin = (origin) => {
-  const value = String(origin || '').trim();
-  if (!value) return '';
-  return /^https?:\/\//i.test(value) ? value.replace(/\/$/, '') : `https://${value}`;
-};
-
-const allowedOrigins = [
-  'https://43866c6f.sohaib-mtk.pages.dev',
-  'https://sohaib-mtk.pages.dev',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  ...(process.env.ADMIN_ORIGIN || '').split(','),
-].map(normalizeOrigin).filter(Boolean);
-
-const normalizedAllowedOrigins = [
-  ...allowedOrigins,
-  ...(process.env.FRONTEND_ORIGINS || '').split(',').map(normalizeOrigin),
-].filter(Boolean);
-
-const isLocalDevelopmentOrigin = (origin) => (
-  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)
-);
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    const normalizedOrigin = normalizeOrigin(origin);
-    if (isLocalDevelopmentOrigin(normalizedOrigin) || normalizedAllowedOrigins.includes(normalizedOrigin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
