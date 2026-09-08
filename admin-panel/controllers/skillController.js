@@ -5,6 +5,7 @@ const getSkills = async (req, res) => {
     const skills = await Skill.find({}).sort({ order: 1, createdAt: -1 });
     res.json(skills);
   } catch (error) {
+    console.error('Get skills failed:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 };
