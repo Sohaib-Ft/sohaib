@@ -172,7 +172,7 @@ export default function Projects({ onViewAll }) {
       });
   }, []);
 
-  // If API loaded, use DB projects. If API not loaded, use fallback.
+  // Keep sample projects only for local development; production must show the API state.
   // Backend already ordered by (order asc, featured desc, createdAt desc).
   let displayProjects;
   if (apiLoaded && allProjects.length > 0) {
@@ -180,7 +180,7 @@ export default function Projects({ onViewAll }) {
     const source = featured.length > 0 ? featured : allProjects;
     displayProjects = source.slice(0, 4);
   } else {
-    displayProjects = FALLBACK;
+    displayProjects = isLocal ? FALLBACK : [];
   }
 
   // Local intersection observer to trigger animations on dynamically loaded cards
@@ -202,7 +202,7 @@ export default function Projects({ onViewAll }) {
     return () => observer.disconnect();
   }, [displayProjects]);
 
-  const totalCount = apiLoaded ? allProjects.length : FALLBACK.length;
+  const totalCount = apiLoaded ? allProjects.length : (isLocal ? FALLBACK.length : 0);
 
   return (
     <section className="projects section" id="projects">

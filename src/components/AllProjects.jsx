@@ -129,9 +129,8 @@ function ProjectCard({ project, index }) {
 }
 
 export default function AllProjects({ onBack }) {
-  const [projects, setProjects] = useState(FALLBACK);
-
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const [projects, setProjects] = useState(isLocal ? FALLBACK : []);
   const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
   const API_URL = isLocal ? 'http://127.0.0.1:5000' : (
     configuredApiUrl && !/^https?:\/\//i.test(configuredApiUrl)
@@ -167,7 +166,7 @@ export default function AllProjects({ onBack }) {
         console.error('Fetch failed:', err);
       }
 
-      // If DB empty or fetch fails, just keep the initial fallback state.
+      // In production, do not replace unavailable API data with sample projects.
     };
 
     fetchProjects();

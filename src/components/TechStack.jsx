@@ -59,11 +59,11 @@ const fallbackCategories = [
 ];
 
 export default function TechStack() {
-  const [categories, setCategories] = useState(fallbackCategories);
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const [categories, setCategories] = useState(isLocal ? fallbackCategories : []);
 
   useEffect(() => {
     const fetchSkills = async () => {
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
       const API_URL = isLocal ? 'http://127.0.0.1:5000' : (
         configuredApiUrl && !/^https?:\/\//i.test(configuredApiUrl)
@@ -103,6 +103,7 @@ export default function TechStack() {
         }
       } catch (err) {
         console.error('Failed to fetch skills:', err);
+        setCategories([]);
       }
     };
 
