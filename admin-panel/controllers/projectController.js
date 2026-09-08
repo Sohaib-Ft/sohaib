@@ -1,10 +1,10 @@
 const Project = require('../models/Project');
+const { uploadToR2, deleteFromR2 } = require('../utils/r2Storage');
 
 // Get all projects
 const getProjects = async (req, res) => {
   try {
     const projects = await Project.find({}).lean();
-    // Normalize legacy documents that don't have an `order` field.
     let needsBackfill = false;
     const normalized = projects.map((p) => {
       if (p.order === undefined || p.order === null) {
@@ -29,7 +29,6 @@ const getProjects = async (req, res) => {
         console.error('Order backfill failed:', e.message);
       }
     }
-    // Primary sort: explicit `order`. Legacy docs (order=undefined) sink to the end.
     normalized.sort((a, b) => {
       const ao = Number.isFinite(a.order) ? a.order : Number.POSITIVE_INFINITY;
       const bo = Number.isFinite(b.order) ? b.order : Number.POSITIVE_INFINITY;
@@ -43,7 +42,6 @@ const getProjects = async (req, res) => {
   }
 };
 
-// Bulk reorder: client sends [{ id, order }, ...]
 const reorderProjects = async (req, res) => {
   try {
     const items = Array.isArray(req.body) ? req.body : req.body?.order;
@@ -72,7 +70,6 @@ const reorderProjects = async (req, res) => {
   }
 };
 
-// Create a project
 const createProject = async (req, res) => {
   try {
     const { title, description, github, tags } = req.body;
@@ -81,9 +78,13 @@ const createProject = async (req, res) => {
       tagsArray = tags.split(',').map(tag => tag.trim());
     }
 
-    // Place new project at the end of the list
     const lastProject = await Project.findOne({}).sort({ order: -1 }).select('order').lean();
     const nextOrder = lastProject && Number.isFinite(lastProject.order) ? lastProject.order + 1 : 0;
+
+    let imageUrl = '';
+    if (req.file) {
+      imageUrl = await uploadToR2(req.file.buffer, req.file.originalname, req.file.mimetype);
+    }
 
     const project = new Project({
       title,
@@ -93,7 +94,7 @@ const createProject = async (req, res) => {
       isPrivate: req.body.isPrivate === 'true' || req.body.isPrivate === true,
       featured: req.body.featured === 'true' || req.body.featured === true,
       order: req.body.order !== undefined ? Number(req.body.order) : nextOrder,
-      image: req.file ? `/uploads/${req.file.filename}` : '',
+      image: imageUrl,
     });
 
     const createdProject = await project.save();
@@ -103,7 +104,6 @@ const createProject = async (req, res) => {
   }
 };
 
-// Update a project
 const updateProject = async (req, res) => {
   try {
     const { title, description, github, tags } = req.body;
@@ -126,7 +126,10 @@ const updateProject = async (req, res) => {
       }
 
       if (req.file) {
-        project.image = `/uploads/${req.file.filename}`;
+        if (project.image) {
+          await deleteFromR2(project.image);
+        }
+        project.image = await uploadToR2(req.file.buffer, req.file.originalname, req.file.mimetype);
       }
 
       const updatedProject = await project.save();
@@ -139,12 +142,14 @@ const updateProject = async (req, res) => {
   }
 };
 
-// Delete a project
 const deleteProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
 
     if (project) {
+      if (project.image) {
+        await deleteFromR2(project.image);
+      }
       await Project.deleteOne({ _id: project._id });
       res.json({ message: 'Project removed' });
     } else {

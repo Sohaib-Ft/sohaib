@@ -4,43 +4,58 @@ const cors = require('cors');
 const path = require('path');
 const connectDB = require('./config/db');
 
-// Load env vars
 dotenv.config();
 
-// Connect to database
 connectDB();
 
 const app = express();
-const fs = require('fs');
 
-// Create uploads folder if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const allowedOrigins = [
+  'https://43866c6f.sohaib-mtk.pages.dev',
+  'https://sohaib-mtk.pages.dev',
+  process.env.ADMIN_ORIGIN,
+].filter(Boolean);
 
-// Middleware
-app.use(cors());
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
 app.use((req, res, next) => {
   console.log(`[API] ${req.method} ${req.url}`);
   next();
 });
 
-// Make uploads folder static
-app.use('/uploads', express.static(uploadsDir));
-
-// Serve portfolio images (so admin panel can display project previews)
 app.use('/images', express.static(path.join(__dirname, '..', 'public', 'images')));
 
-// Routes
+const apiCacheControl = (req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Surrogate-Control', 'no-store');
+  }
+  next();
+};
+app.use(apiCacheControl);
+
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/skills', require('./routes/skillRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 
-// Basic route
 app.get('/', (req, res) => {
   res.send('Admin API is running...');
 });
