@@ -19,6 +19,7 @@ export default function App() {
   const [skills, setSkills] = useState([]);
   const [projects, setProjects] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [apiError, setApiError] = useState('');
 
   // Drag and Drop state
   const [draggedSkill, setDraggedSkill] = useState(null);
@@ -42,24 +43,25 @@ export default function App() {
 
   // Fetch all data
   useEffect(() => {
+    setApiError('');
     fetchSkills();
     fetchProjects();
     fetchMessages();
   }, []);
 
   const fetchSkills = async () => {
-    try { const res = await axios.get(`${API}/skills`); setSkills(res.data); } 
-    catch (e) { console.error(e); }
+    try { const res = await axios.get(`${API}/skills`); setSkills(res.data); }
+    catch (e) { console.error(e); setApiError(`API inaccessible: ${API}/skills`); }
   };
 
   const fetchProjects = async () => {
-    try { const res = await axios.get(`${API}/projects`); setProjects(res.data); } 
-    catch (e) { console.error(e); }
+    try { const res = await axios.get(`${API}/projects`); setProjects(res.data); }
+    catch (e) { console.error(e); setApiError(`API inaccessible: ${API}/projects`); }
   };
 
   const fetchMessages = async () => {
-    try { const res = await axios.get(`${API}/messages`); setMessages(res.data); } 
-    catch (e) { console.error(e); }
+    try { const res = await axios.get(`${API}/messages`); setMessages(res.data); }
+    catch (e) { console.error(e); setApiError(`API inaccessible: ${API}/messages`); }
   };
 
   // ========================================
@@ -244,6 +246,12 @@ export default function App() {
           </button>
         </div>
       </nav>
+
+      {apiError && (
+        <div className="api-error" role="alert">
+          {apiError}. Vérifie que le serveur backend est démarré et que VITE_API_URL pointe vers son URL.
+        </div>
+      )}
 
       <main className="admin-main">
 

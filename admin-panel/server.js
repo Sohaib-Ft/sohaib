@@ -29,10 +29,15 @@ const normalizedAllowedOrigins = [
   ...(process.env.FRONTEND_ORIGINS || '').split(',').map(normalizeOrigin),
 ].filter(Boolean);
 
+const isLocalDevelopmentOrigin = (origin) => (
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)
+);
+
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (normalizedAllowedOrigins.includes(normalizeOrigin(origin))) {
+    const normalizedOrigin = normalizeOrigin(origin);
+    if (isLocalDevelopmentOrigin(normalizedOrigin) || normalizedAllowedOrigins.includes(normalizedOrigin)) {
       return callback(null, true);
     }
     return callback(new Error('Not allowed by CORS'));
