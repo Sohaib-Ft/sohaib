@@ -3,7 +3,7 @@ import axios from 'axios';
 import skillLibrary from './skillLibrary';
 import './index.css';
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://127.0.0.1:5000' : 'https://portfolio-backend-sohaib.fly.dev');
+const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://127.0.0.1:5000' : '');
 const API = `${API_URL}/api`;
 const BASE_URL = API_URL;
 

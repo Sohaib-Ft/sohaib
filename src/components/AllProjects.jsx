@@ -132,7 +132,7 @@ export default function AllProjects({ onBack }) {
   const [projects, setProjects] = useState(FALLBACK);
 
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const API_URL = isLocal ? 'http://127.0.0.1:5000' : (import.meta.env.VITE_API_URL || 'https://portfolio-backend-sohaib.fly.dev');
+  const API_URL = isLocal ? 'http://127.0.0.1:5000' : (import.meta.env.VITE_API_URL || '');
 
   useEffect(() => {
     const fetchProjects = async () => {

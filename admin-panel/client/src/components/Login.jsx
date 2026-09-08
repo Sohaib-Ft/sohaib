@@ -8,7 +8,8 @@ export default function Login({ setToken }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const API_URL = 'https://portfolio-backend-sohaib.fly.dev';
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://127.0.0.1:5000' : '');
     try {
       const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
       localStorage.setItem('adminToken', res.data.token);

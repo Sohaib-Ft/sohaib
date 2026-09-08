@@ -15,7 +15,8 @@ export default function Settings() {
     fetchProfile();
   }, []);
 
-  const API_URL = 'https://portfolio-backend-sohaib.fly.dev';
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://127.0.0.1:5000' : '');
 
   const fetchProfile = async () => {
     try {
