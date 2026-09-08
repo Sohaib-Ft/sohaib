@@ -1,6 +1,8 @@
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const crypto = require('crypto');
+const fs = require('fs/promises');
+const path = require('path');
 
 const r2Client = new S3Client({
   region: 'auto',
@@ -22,6 +24,14 @@ function generateFileName(originalName) {
 }
 
 async function uploadToR2(fileBuffer, fileName, mimeType) {
+  if (!process.env.R2_ENDPOINT || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY || !BUCKET_NAME || !PUBLIC_URL) {
+    const localName = generateFileName(fileName).replace('projects/', '');
+    const uploadDirectory = path.join(__dirname, '..', 'uploads');
+    await fs.mkdir(uploadDirectory, { recursive: true });
+    await fs.writeFile(path.join(uploadDirectory, localName), fileBuffer);
+    return `/uploads/${localName}`;
+  }
+
   const key = generateFileName(fileName);
   
   const command = new PutObjectCommand({
@@ -37,7 +47,19 @@ async function uploadToR2(fileBuffer, fileName, mimeType) {
 }
 
 async function deleteFromR2(imageUrl) {
-  if (!imageUrl || !imageUrl.includes(PUBLIC_URL)) return;
+  if (!imageUrl) return;
+
+  if (imageUrl.startsWith('/uploads/')) {
+    const localName = path.basename(imageUrl);
+    try {
+      await fs.unlink(path.join(__dirname, '..', 'uploads', localName));
+    } catch (error) {
+      if (error.code !== 'ENOENT') console.error('Failed to delete local image:', error);
+    }
+    return;
+  }
+
+  if (!PUBLIC_URL || !imageUrl.includes(PUBLIC_URL)) return;
   
   try {
     const key = imageUrl.replace(`${PUBLIC_URL}/`, '');

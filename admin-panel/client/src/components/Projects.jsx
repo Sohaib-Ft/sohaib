@@ -16,6 +16,7 @@ export default function Projects() {
   const [tags, setTags] = useState('');
   const [image, setImage] = useState(null);
   const [featured, setFeatured] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   // Drag state
   const dragIndex = useRef(null);
@@ -56,6 +57,7 @@ export default function Projects() {
       setImage(null);
       setFeatured(false);
     }
+    setSaveError('');
     setIsModalOpen(true);
   };
 
@@ -85,6 +87,7 @@ export default function Projects() {
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error saving project', error);
+      setSaveError(error.response?.data?.message || error.response?.data?.error || error.message || 'Unable to save project');
     }
   };
 
@@ -298,6 +301,11 @@ export default function Projects() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-2xl font-bold mb-6">{currentProject ? 'Edit Project' : 'Add New Project'}</h3>
+            {saveError && (
+              <div className="mb-4 rounded border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-300" role="alert">
+                {saveError}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">Title</label>

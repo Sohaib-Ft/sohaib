@@ -38,7 +38,8 @@ const getProjects = async (req, res) => {
     });
     res.json(normalized);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Update project failed:', error);
+    res.status(500).json({ message: 'Unable to update project', error: error.message });
   }
 };
 
@@ -138,7 +139,8 @@ const updateProject = async (req, res) => {
       res.status(404).json({ message: 'Project not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Delete project failed:', error);
+    res.status(500).json({ message: 'Unable to delete project', error: error.message });
   }
 };
 
