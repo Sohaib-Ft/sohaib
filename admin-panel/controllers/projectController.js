@@ -4,7 +4,10 @@ const { uploadToR2, deleteFromR2 } = require('../utils/r2Storage');
 // Get all projects
 const getProjects = async (req, res) => {
   try {
+    console.log(`[getProjects] db=${require('mongoose').connection.name} host=${require('mongoose').connection.host} coll=${Project.collection.name}`);
+    const rawCount = await Project.estimatedDocumentCount();
     const projects = await Project.find({}).lean();
+    console.log(`[getProjects] estimated count=${rawCount} returned=${projects.length}`);
     let needsBackfill = false;
     const normalized = projects.map((p) => {
       if (p.order === undefined || p.order === null) {
