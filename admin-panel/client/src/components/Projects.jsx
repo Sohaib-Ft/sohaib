@@ -83,7 +83,7 @@ export default function Projects() {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       }
-      fetchProjects();
+      await fetchProjects();
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error saving project', error);
