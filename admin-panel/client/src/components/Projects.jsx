@@ -3,6 +3,24 @@ import axios from 'axios';
 import { PencilIcon, TrashIcon, PlusIcon, StarIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid, Bars3Icon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 
+const staticProjectImage = (title) => {
+  const normalizedTitle = (title || '').toLowerCase();
+  if (normalizedTitle.includes('linked')) return '/images/linkedu.png';
+  if (normalizedTitle.includes('cmms')) return '/images/cmms.png';
+  if (normalizedTitle.includes('book')) return '/images/book-review.png';
+  if (normalizedTitle.includes('ofppt')) return '/images/ofppt.png';
+  return '';
+};
+
+const getProjectImage = (project, apiUrl) => {
+  if (project.image && !project.image.startsWith('/uploads/')) {
+    return project.image.startsWith('http') ? project.image : `${apiUrl}${project.image}`;
+  }
+
+  const fallback = staticProjectImage(project.title);
+  return fallback ? `${apiUrl}${fallback}` : '';
+};
+
 export default function Projects() {
   const [projects, setProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -211,12 +229,15 @@ export default function Projects() {
 
             {/* Thumbnail */}
             <div className="w-32 h-24 sm:w-40 sm:h-28 flex-shrink-0 overflow-hidden bg-gray-800">
-              {project.image && (
+              {getProjectImage(project, API_URL) && (
                 <img
-                  src={project.image.startsWith('http') ? project.image : `${API_URL}${project.image}`}
+                  src={getProjectImage(project, API_URL)}
                   alt={project.title}
                   className="w-full h-full object-cover"
                   draggable={false}
+                  onError={(event) => {
+                    event.currentTarget.style.display = 'none';
+                  }}
                 />
               )}
             </div>
