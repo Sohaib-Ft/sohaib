@@ -110,6 +110,22 @@ export default function TechStack() {
     fetchSkills();
   }, []);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const categoriesToObserve = document.querySelectorAll('#techstack .animate-in');
+    categoriesToObserve.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, [categories]);
+
   return (
     <section className="techstack section" id="techstack">
       <div className="container">

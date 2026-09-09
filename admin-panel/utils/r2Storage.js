@@ -24,7 +24,15 @@ function generateFileName(originalName) {
 }
 
 async function uploadToR2(fileBuffer, fileName, mimeType) {
-  if (!process.env.R2_ENDPOINT || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY || !BUCKET_NAME || !PUBLIC_URL) {
+  const hasR2Config = process.env.R2_ENDPOINT && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && BUCKET_NAME && PUBLIC_URL;
+
+  const isDeployed = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT_ID;
+
+  if (!hasR2Config && isDeployed) {
+    throw new Error('Persistent image storage is not configured. Set the R2 environment variables before uploading images.');
+  }
+
+  if (!hasR2Config) {
     const localName = generateFileName(fileName).replace('projects/', '');
     const uploadDirectory = path.join(__dirname, '..', 'uploads');
     await fs.mkdir(uploadDirectory, { recursive: true });
